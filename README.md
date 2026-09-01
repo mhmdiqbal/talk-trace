@@ -307,7 +307,14 @@ Recorder is built with local-first privacy:
 
 For vulnerability disclosure and full security details, see [SECURITY.md](file:///Users/mmdiqbal/Projects/record-app/SECURITY.md).
 
+## Contributing
+
+Contributions, bug reports, and feature requests are welcome!
+- Please read our [CONTRIBUTING.md](file:///Users/mmdiqbal/Projects/record-app/CONTRIBUTING.md) for local setup, development guidelines, and architecture rules.
+- Review our [CODE_OF_CONDUCT.md](file:///Users/mmdiqbal/Projects/record-app/CODE_OF_CONDUCT.md) before participating in discussions or issues.
+
 ## License
 
 This project is open-source software licensed under the [MIT License](file:///Users/mmdiqbal/Projects/record-app/LICENSE).
+
 

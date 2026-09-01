@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security Vulnerability Reporting
+    url: https://github.com/mhmdiqbal/talk-trace/security/advisories/new
+    about: Please report security or sensitive privacy vulnerabilities privately through GitHub Security Advisories.
+  - name: Questions & General Discussions
+    url: https://github.com/mhmdiqbal/talk-trace/discussions
+    about: Ask questions and participate in community discussions.

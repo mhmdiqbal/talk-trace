@@ -1,0 +1,68 @@
+name: Bug Report
+description: Report an issue or unexpected behavior in Recorder
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting a bug! Please ensure you have checked existing issues before submitting.
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is.
+      placeholder: What went wrong?
+    validations:
+      required: true
+  - type: dropdown
+    id: macos-version
+    attributes:
+      label: macOS Version
+      description: Which version of macOS are you using? (macOS 15+ is required)
+      options:
+        - macOS 15 Sequoia (15.0 - 15.3+)
+        - macOS 14 Sonoma (Unsupported)
+        - Other (please specify below)
+    validations:
+      required: true
+  - type: dropdown
+    id: chip-arch
+    attributes:
+      label: Apple Silicon Chip
+      description: Which Mac processor are you running?
+      options:
+        - Apple M1 / M1 Pro / M1 Max / M1 Ultra
+        - Apple M2 / M2 Pro / M2 Max / M2 Ultra
+        - Apple M3 / M3 Pro / M3 Max
+        - Apple M4 / M4 Pro / M4 Max
+        - Intel (Unsupported)
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction-steps
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce the problem?
+      placeholder: |
+        1. Start Recorder via `pnpm start` or app bundle
+        2. Press ⌥⌘R to start recording
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Debug Logs
+      description: |
+        If applicable, run with `RECORDER_DEBUG=1 pnpm start` and paste the relevant terminal output below.
+      render: shell
+    validations:
+      required: false
