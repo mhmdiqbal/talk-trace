@@ -80,7 +80,7 @@ identifier and the `audio-input` entitlement survive that.
 ```bash
 pnpm install
 pnpm start          # builds both binaries and the TypeScript, then runs Electron
-pnpm run dist       # builds release/mac-arm64/Recorder.app
+pnpm run dist       # builds release/mac-arm64/Recorder.app and release/Recorder-1.0.0-arm64.dmg
 ```
 
 The first build also downloads and compiles whisper.cpp into `native/vendor/`,
@@ -90,11 +90,15 @@ makes every later build skip it.
 This project uses pnpm 11, pinned by the `packageManager` field. Run
 `corepack enable` once so the pinned version is the one that runs.
 
-Copy `release/mac-arm64/Recorder.app` to `/Applications` and open it. Look for
-the ring icon in the menu bar. It turns into a red dot while recording.
+To install locally, open the generated `.dmg` in `release/Recorder-1.0.0-arm64.dmg`
+and drag Recorder into `/Applications` (or directly copy
+`release/mac-arm64/Recorder.app` to `/Applications`). Look for the ring icon in
+the menu bar. It turns into a red dot while recording.
 
 `pnpm start` needs the signing certificate named in `scripts/build-helper.sh`.
-Override it with `RECORDER_IDENTITY="..."` if yours differs.
+Override it with `RECORDER_IDENTITY="..."` if yours differs. For public
+distribution outside development, sign with a Developer ID Application
+certificate and notarize via `electron-builder`.
 
 ## Linting
 

@@ -32,6 +32,8 @@ mac:
   target:
     - target: dir
       arch: arm64
+    - target: dmg
+      arch: arm64
   identity: "Apple Development: Muhamad Iqbal (2KL7MN2RPU)"
   hardenedRuntime: true
   gatekeeperAssess: false
@@ -44,3 +46,18 @@ mac:
       plays. No picture is ever captured or saved.
     NSMicrophoneUsageDescription: >-
       Recorder needs the microphone so your voice is mixed into the recording.
+
+dmg:
+  artifactName: "${productName}-${version}-${arch}.${ext}"
+  window:
+    width: 540
+    height: 380
+  iconSize: 128
+  contents:
+    - x: 140
+      y: 190
+      type: file
+    - x: 400
+      y: 190
+      type: link
+      path: /Applications
