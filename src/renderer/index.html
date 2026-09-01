@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Recorder</title>
+    <link rel="stylesheet" href="tokens.css" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main id="root" data-state="idle">
+      <header>
+        <span class="title">Recorder</span>
+      </header>
+
+      <section id="takeover" class="takeover" hidden>
+        <span class="glyph">🔒</span>
+        <p id="takeoverText"></p>
+        <button id="takeoverAction" type="button"></button>
+      </section>
+
+      <div id="body" class="body">
+        <button id="start" class="start" type="button">
+          <span class="dot"></span>
+          <span>Start</span>
+        </button>
+
+        <div id="status" class="status" hidden>
+          <span class="dot"></span>
+          <span id="statusLabel" class="statusLabel">Recording</span>
+          <span id="timer" class="timer">0:00</span>
+        </div>
+
+        <div id="meters" class="meters" hidden>
+          <div class="meter">
+            <span class="meterName">Mac</span>
+            <div class="track">
+              <div id="systemBar" class="fill system"></div>
+              <div id="systemPeak" class="peak" hidden></div>
+            </div>
+          </div>
+          <div class="meter">
+            <span class="meterName">Mic</span>
+            <div class="track">
+              <div id="micBar" class="fill mic"></div>
+              <div id="micPeak" class="peak" hidden></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="transport" class="transport" hidden>
+          <button id="pause" class="button" type="button">Pause</button>
+          <button id="stop" class="button stop" type="button">Stop</button>
+        </div>
+
+        <button id="micRow" class="micRow" type="button">
+          <span class="label">Mic</span>
+          <span id="micName" class="value">System default</span>
+          <span class="chevron">⌄</span>
+        </button>
+
+        <p id="micNote" class="micNote" hidden>
+          <span>Mic is off. Recordings will have Mac sound only.</span>
+          <button id="micNoteAction" type="button">Turn on</button>
+        </p>
+      </div>
+
+      <p id="message" class="message" hidden></p>
+
+      <footer>
+        <span id="output" class="output"></span>
+        <span id="hotkey" class="hint">⌥⌘R</span>
+        <button id="reveal" class="icon folder" type="button" title="Open the recordings folder"></button>
+        <button id="quit" class="icon power" type="button" title="Quit Recorder"></button>
+      </footer>
+    </main>
+    <script type="module" src="renderer.js"></script>
+  </body>
+</html>

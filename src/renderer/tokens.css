@@ -1,0 +1,54 @@
+[hidden] { display: none !important; }
+
+:root {
+  --accent: #007aff;
+  --record: #ff3b30;
+  --clip: #ff3b30;
+  --system: #0a84ff;
+  --mic: #30d158;
+
+  --text: rgba(0, 0, 0, 0.9);
+  --muted: rgba(0, 0, 0, 0.5);
+  --faint: rgba(0, 0, 0, 0.32);
+  --line: rgba(0, 0, 0, 0.1);
+  --control: rgba(0, 0, 0, 0.06);
+  --control-hover: rgba(0, 0, 0, 0.11);
+  --control-line: rgba(0, 0, 0, 0.12);
+  --track: rgba(0, 0, 0, 0.09);
+  --opaque: #f2f2f4;
+  --on-accent: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --system: #409cff;
+    --mic: #3ddc6a;
+
+    --text: rgba(255, 255, 255, 0.92);
+    --muted: rgba(255, 255, 255, 0.55);
+    --faint: rgba(255, 255, 255, 0.35);
+    --line: rgba(255, 255, 255, 0.12);
+    --control: rgba(255, 255, 255, 0.1);
+    --control-hover: rgba(255, 255, 255, 0.17);
+    --control-line: rgba(255, 255, 255, 0.14);
+    --track: rgba(255, 255, 255, 0.13);
+    --opaque: #2a2a2e;
+  }
+}
+
+* { box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  /* Vibrancy is painted by the window. Any body background covers it. */
+  background: transparent;
+  font: 13px -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+  color: var(--text);
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
+}
+
+body[data-reduced-transparency="true"] { background: var(--opaque); }

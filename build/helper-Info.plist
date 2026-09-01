@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleIdentifier</key>
+  <string>com.mmdiqbal.recorder.helper</string>
+  <key>CFBundleName</key>
+  <string>Recorder Audio Helper</string>
+  <key>CFBundleDisplayName</key>
+  <string>Recorder Audio Helper</string>
+  <key>CFBundleVersion</key>
+  <string>1</string>
+  <key>CFBundleShortVersionString</key>
+  <string>1.0</string>
+  <key>NSScreenCaptureUsageDescription</key>
+  <string>Recorder needs Screen Recording access to capture the sound your Mac plays. No picture is ever captured or saved.</string>
+  <key>NSMicrophoneUsageDescription</key>
+  <string>Recorder needs the microphone so your voice is mixed into the recording.</string>
+</dict>
+</plist>

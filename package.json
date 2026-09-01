@@ -1,0 +1,37 @@
+{
+  "name": "recorder",
+  "version": "1.0.0",
+  "description": "Records what your Mac plays, plus your microphone",
+  "main": "dist/main/main.js",
+  "packageManager": "pnpm@11.24.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "author": "Muhamad Iqbal",
+  "license": "MIT",
+  "scripts": {
+    "build:helper": "./scripts/build-helper.sh",
+    "build:transcriber": "./scripts/build-transcriber.sh",
+    "build:ts": "tsc -p tsconfig.renderer.json && tsc -p tsconfig.json",
+    "build:copy": "mkdir -p dist/renderer/icons && cp src/renderer/index.html src/renderer/tokens.css src/renderer/style.css dist/renderer/ && cp src/renderer/icons/*.svg dist/renderer/icons/",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.renderer.json",
+    "lint": "./scripts/lint.sh",
+    "sonar": "./scripts/sonar.sh",
+    "build": "pnpm run build:helper && pnpm run build:transcriber && pnpm run build:ts && pnpm run build:copy",
+    "start": "pnpm run build && electron .",
+    "dist": "pnpm run build && electron-builder",
+    "test": "./scripts/regression.sh",
+    "pretest": "pnpm lint"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@stylistic/eslint-plugin": "^5.10.0",
+    "@types/node": "^22.10.2",
+    "electron": "^33.3.1",
+    "electron-builder": "^25.1.8",
+    "eslint": "^10.9.1",
+    "globals": "^17.11.0",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.68.0"
+  }
+}

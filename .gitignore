@@ -1,0 +1,46 @@
+# Dependencies and Node/TypeScript outputs
+node_modules/
+dist/
+release/
+*.tsbuildinfo
+.eslintcache
+
+# Native binaries & SwiftPM / Xcode build artifacts
+resources/RecorderHelper
+resources/RecorderTranscriber
+native/vendor/
+.build/
+.swiftpm/
+xcuserdata/
+DerivedData/
+
+# Python & code analysis tool caches
+__pycache__/
+*.py[cod]
+*$py.class
+.ruff_cache/
+.scannerwork/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+
+# Operating System & Editor files
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
