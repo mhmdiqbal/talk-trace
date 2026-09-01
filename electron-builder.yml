@@ -34,7 +34,6 @@ mac:
       arch: arm64
     - target: dmg
       arch: arm64
-  identity: "Apple Development: Muhamad Iqbal (2KL7MN2RPU)"
   hardenedRuntime: true
   gatekeeperAssess: false
   entitlements: build/entitlements.mac.plist

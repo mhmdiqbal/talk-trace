@@ -95,10 +95,11 @@ and drag Recorder into `/Applications` (or directly copy
 `release/mac-arm64/Recorder.app` to `/Applications`). Look for the ring icon in
 the menu bar. It turns into a red dot while recording.
 
-`pnpm start` needs the signing certificate named in `scripts/build-helper.sh`.
-Override it with `RECORDER_IDENTITY="..."` if yours differs. For public
-distribution outside development, sign with a Developer ID Application
-certificate and notarize via `electron-builder`.
+`pnpm start` automatically detects any valid `Apple Development` certificate in
+your macOS Keychain. If none is found, it falls back to ad-hoc (`-`) signing.
+You can specify a certificate explicitly with `RECORDER_IDENTITY="..."`.
+For distribution outside development, sign with a Developer ID Application
+certificate and notarize via `CSC_NAME="..." pnpm run dist`.
 
 ## Linting
 
@@ -296,3 +297,17 @@ build/        helper-Info.plist, entitlements.mac.plist, afterPack.cjs, icon.icn
 `Recorder.swift` sums both sources then clamps. With loud music and a hot mic
 this can clip. Change `systemGain` and `micGain` at the top of the class to
 `0.7`.
+
+## Privacy & Security
+
+Recorder is built with local-first privacy:
+- Audio capture and mic inputs are mixed in-memory and saved directly to your local disk (`~/Music/Recordings/`).
+- Local speech-to-text is powered by `whisper.cpp` with Apple Silicon Metal acceleration.
+- Zero analytics, telemetry, or remote network requests.
+
+For vulnerability disclosure and full security details, see [SECURITY.md](file:///Users/mmdiqbal/Projects/record-app/SECURITY.md).
+
+## License
+
+This project is open-source software licensed under the [MIT License](file:///Users/mmdiqbal/Projects/record-app/LICENSE).
+

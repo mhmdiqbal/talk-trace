@@ -2,7 +2,29 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-IDENTITY="${RECORDER_IDENTITY:-Apple Development: Muhamad Iqbal (2KL7MN2RPU)}"
+resolve_identity() {
+  if [ -n "${RECORDER_IDENTITY:-}" ]; then
+    echo "$RECORDER_IDENTITY"
+    return
+  fi
+
+  local detected
+  detected="$(security find-identity -v -p codesigning 2>/dev/null | grep -E '"(Apple Development|Developer ID Application):' | head -1 | sed -E 's/.*"((Apple Development|Developer ID Application): .*)".*/\1/' || true)"
+
+  if [ -n "$detected" ]; then
+    echo "$detected"
+  else
+    echo "-"
+  fi
+}
+
+IDENTITY="$(resolve_identity)"
+if [ "$IDENTITY" = "-" ]; then
+  echo "Notice: No Apple Development identity found in Keychain; using ad-hoc (-) signing."
+  echo "        Set RECORDER_IDENTITY=\"...\" to sign with a specific certificate."
+else
+  echo "Signing helper with identity: $IDENTITY"
+fi
 PLIST="$ROOT/build/helper-Info.plist"
 ENTITLEMENTS="$ROOT/build/entitlements.mac.plist"
 
