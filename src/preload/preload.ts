@@ -5,8 +5,9 @@ const api = {
   getState: (): Promise<UiState> => ipcRenderer.invoke("ui:getState"),
   toggleRecording: (): Promise<void> => ipcRenderer.invoke("ui:toggleRecording"),
   togglePause: (): Promise<void> => ipcRenderer.invoke("ui:togglePause"),
-  selectMic: (micID: string | null): Promise<void> =>
-    ipcRenderer.invoke("ui:selectMic", micID),
+  toggleMicMute: (): Promise<void> => ipcRenderer.invoke("ui:toggleMicMute"),
+  selectMic: (enabled: boolean, micID: string | null): Promise<void> =>
+    ipcRenderer.invoke("ui:selectMic", enabled, micID),
   openPermission: (which: "screen" | "mic"): Promise<void> =>
     ipcRenderer.invoke("ui:openPermission", which),
   openMicMenu: (): Promise<void> => ipcRenderer.invoke("ui:openMicMenu"),

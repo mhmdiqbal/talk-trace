@@ -3,24 +3,23 @@ import {
   app,
   BrowserWindow,
   globalShortcut,
-  ipcMain,
   nativeImage,
   nativeTheme,
   powerSaveBlocker,
-  shell,
   systemPreferences,
   Tray,
 } from "electron";
 import { Helper } from "./helper";
+import { registerIpc } from "./ipc";
 import { formatSeconds, helperExitMessage } from "./messages";
-import { openMicMenu } from "./micMenu";
-import { newRecordingPath, recordingsDir } from "./paths";
+import { newRecordingPath, resourcePath } from "./paths";
 import { runSelfTest } from "./selftest";
 import * as settings from "./settings";
 import * as transcribe from "./transcribe";
 import type { HelperEvent, UiState } from "./protocol";
 
 const HOTKEY = "Alt+Command+R";
+const MUTE_HOTKEY = "Alt+Command+M";
 const MAX_RESPAWNS = 5;
 const SHUTDOWN_GRACE_MS = 5000;
 const POPUP_WIDTH = 300;
@@ -30,12 +29,6 @@ const POPUP_HEIGHT_ACTIVE = 238;
 const POPUP_HEIGHT_MESSAGE_EXTRA = 38;
 const POPUP_HEIGHT_MIC_NOTE_EXTRA = 34;
 const FALLBACK_ACCENT = "#007aff";
-
-const SETTINGS_URLS = {
-  screen:
-    "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture",
-  mic: "x-apple.systempreferences:com.apple.preference.security?Privacy_Microphone",
-} as const;
 
 const helper = new Helper();
 let tray: Tray | null = null;
@@ -53,18 +46,24 @@ let shutdownDone = false;
 let menuOpen = false;
 let appliedHeight = 0;
 
+const savedSettings = settings.load();
+
 const ui: UiState = {
   state: "idle",
   screenPermission: false,
   micPermission: false,
   mics: [],
-  selectedMicID: settings.load().selectedMicID,
+  selectedMicID: savedSettings.selectedMicID,
+  micEnabled: savedSettings.micEnabled,
+  micMuted: false,
   currentOutput: "",
   systemLevel: 0,
   micLevel: 0,
   elapsedSeconds: 0,
   hotkey: "⌥⌘R",
   hotkeyRegistered: false,
+  muteHotkey: "⌥⌘M",
+  muteHotkeyRegistered: false,
   lastFile: null,
   message: null,
   accentColor: FALLBACK_ACCENT,
@@ -83,9 +82,7 @@ function readAccentColor(): string {
 }
 
 function resource(name: string): string {
-  return app.isPackaged
-    ? path.join(process.resourcesPath, name)
-    : path.join(app.getAppPath(), "resources", name);
+  return resourcePath(name, app.isPackaged, app.getAppPath());
 }
 
 // A destroyed BrowserWindow keeps its JS reference, so `popup` alone is not a
@@ -101,7 +98,7 @@ function popupHeight(): number {
   const messageExtra = ui.message ? POPUP_HEIGHT_MESSAGE_EXTRA : 0;
   if (!ui.screenPermission) return POPUP_HEIGHT_BLOCKED + messageExtra;
   const base = ui.state === "idle" ? POPUP_HEIGHT_IDLE : POPUP_HEIGHT_ACTIVE;
-  const micNoteExtra = ui.micPermission ? 0 : POPUP_HEIGHT_MIC_NOTE_EXTRA;
+  const micNoteExtra = ui.micPermission || !ui.micEnabled ? 0 : POPUP_HEIGHT_MIC_NOTE_EXTRA;
   return base + messageExtra + micNoteExtra;
 }
 
@@ -174,11 +171,12 @@ function toggleRecording(): void {
       return;
     }
     ui.message = null;
+    ui.micMuted = false;
     helper.send({
       cmd: "start",
       path: newRecordingPath(),
-      includeMic: true,
-      ...(ui.selectedMicID ? { micDeviceID: ui.selectedMicID } : {}),
+      includeMic: ui.micEnabled,
+      ...(ui.selectedMicID && ui.micEnabled ? { micDeviceID: ui.selectedMicID } : {}),
       sampleRate: 48000,
       bitrate: 128000,
     });
@@ -190,6 +188,14 @@ function toggleRecording(): void {
 function togglePause(): void {
   if (ui.state === "recording") helper.send({ cmd: "pause" });
   else if (ui.state === "paused") helper.send({ cmd: "resume" });
+}
+
+function toggleMicMute(): void {
+  if (ui.state === "idle" || !ui.micEnabled) return;
+  ui.micMuted = !ui.micMuted;
+  if (ui.micMuted) ui.micLevel = 0;
+  helper.send({ cmd: "muteMic", muted: ui.micMuted });
+  pushState();
 }
 
 // MARK: helper events
@@ -222,10 +228,16 @@ function onHelperEvent(event: HelperEvent): void {
     case "started":
       respawnAttempts = 0;
       ui.lastFile = event.path;
+      ui.micMuted = false;
       recordedMs = 0;
       segmentStartedAt = Date.now();
       blockSleep(true);
       startTicker();
+      break;
+
+    case "micMuted":
+      ui.micMuted = event.muted;
+      if (event.muted) ui.micLevel = 0;
       break;
 
     case "state":
@@ -278,9 +290,10 @@ function onHelperExit(code: number | null, signal: string | null): void {
   respawnTimer = setTimeout(() => { helper.start(); }, delay);
 }
 
-function pickMic(micID: string | null): void {
+function pickMic(enabled: boolean, micID: string | null): void {
+  ui.micEnabled = enabled;
   ui.selectedMicID = micID;
-  settings.save({ selectedMicID: micID });
+  settings.save({ selectedMicID: micID, micEnabled: enabled });
   pushState();
 }
 
@@ -297,6 +310,7 @@ function applyState(state: UiState["state"]): void {
     segmentStartedAt = null;
     ui.systemLevel = 0;
     ui.micLevel = 0;
+    ui.micMuted = false;
     blockSleep(false);
     stopTicker();
   }
@@ -372,33 +386,16 @@ function togglePopup(): void {
   showPopup();
 }
 
-function registerIpc(): void {
-  ipcMain.handle("ui:getState", () => ui);
-  ipcMain.handle("ui:toggleRecording", () => { toggleRecording(); });
-  ipcMain.handle("ui:togglePause", () => { togglePause(); });
-  ipcMain.handle("ui:selectMic", (_event, micID: string | null) => { pickMic(micID); });
-  ipcMain.handle("ui:openPermission", (_event, which: "screen" | "mic") =>
-    shell.openExternal(SETTINGS_URLS[which]),
-  );
-  ipcMain.handle("ui:openMicMenu", () => {
-    const window = livePopup();
-    if (!window) return;
-    openMicMenu({
-      window,
-      mics: ui.mics,
-      selectedMicID: ui.selectedMicID,
-      onPick: pickMic,
-      onOpenChange: (open) => {
-        menuOpen = open;
-        if (!open) livePopup()?.focus();
-      },
-    });
+function initIpc(): void {
+  registerIpc({
+    getUiState: () => ui,
+    getPopup: livePopup,
+    toggleRecording,
+    togglePause,
+    toggleMicMute,
+    pickMic,
+    onMenuOpenChange: (open) => { menuOpen = open; },
   });
-  ipcMain.handle("ui:revealLastFile", () => {
-    if (ui.lastFile) shell.showItemInFolder(ui.lastFile);
-    else void shell.openPath(recordingsDir());
-  });
-  ipcMain.handle("ui:quit", () => { app.quit(); });
 }
 
 // MARK: startup
@@ -432,11 +429,12 @@ void app.whenReady().then(() => {
   });
 
   ui.hotkeyRegistered = globalShortcut.register(HOTKEY, toggleRecording);
+  ui.muteHotkeyRegistered = globalShortcut.register(MUTE_HOTKEY, toggleMicMute);
   if (!ui.hotkeyRegistered) {
     ui.message = `The hotkey ${ui.hotkey} is already taken by another app.`;
   }
 
-  registerIpc();
+  initIpc();
 
   const selftest =
     process.env.TALKTRACE_SELFTEST ?? process.env.RECORDER_SELFTEST;

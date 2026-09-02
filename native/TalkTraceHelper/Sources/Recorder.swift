@@ -23,6 +23,7 @@ final class Recorder: NSObject {
     private let state = NSLock()
     private var recording = false
     private var paused = false
+    private var micMuted = false
     private var latestMicLevel: Float = 0
 
     private var stream: SCStream?
@@ -47,6 +48,21 @@ final class Recorder: NSObject {
         state.lock()
         defer { state.unlock() }
         return paused
+    }
+
+    var isMicMuted: Bool {
+        state.lock()
+        defer { state.unlock() }
+        return micMuted
+    }
+
+    func setMicMuted(_ value: Bool) {
+        state.lock()
+        micMuted = value
+        if value { latestMicLevel = 0 }
+        state.unlock()
+        if value { micRing?.reset() }
+        Emit.event("micMuted", ["muted": value])
     }
 
     private func setRecording(_ value: Bool) {
@@ -191,6 +207,10 @@ final class Recorder: NSObject {
         Trace.mark("tearDown: micQueue done")
         micRing = nil
         outputURL = nil
+        state.lock()
+        micMuted = false
+        latestMicLevel = 0
+        state.unlock()
         setPaused(false)
     }
 
@@ -245,7 +265,11 @@ final class Recorder: NSObject {
 
         let systemLevel = AudioMath.peak(mix)
         AudioMath.scale(mix, by: systemGain)
-        micRing?.drain(frames: Int(mix.frameLength), into: mix, gain: micGain)
+        if !isMicMuted {
+            micRing?.drain(frames: Int(mix.frameLength), into: mix, gain: micGain)
+        } else {
+            micRing?.reset()
+        }
         AudioMath.clamp(mix)
 
         do {
@@ -258,7 +282,7 @@ final class Recorder: NSObject {
     }
 
     private func handleMic(_ sampleBuffer: CMSampleBuffer) {
-        guard isRecording, !isPaused, let micRing, let micResampler else { return }
+        guard isRecording, !isPaused, !isMicMuted, let micRing, let micResampler else { return }
         guard let raw = Self.pcmBuffer(from: sampleBuffer) else { return }
 
         let level = AudioMath.peak(raw)
@@ -276,7 +300,7 @@ final class Recorder: NSObject {
         lastLevelAt = now
 
         state.lock()
-        let mic = latestMicLevel
+        let mic = micMuted ? 0 : latestMicLevel
         state.unlock()
 
         Emit.event("level", ["system": Double(system), "mic": Double(mic)])

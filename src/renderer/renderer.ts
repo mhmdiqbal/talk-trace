@@ -30,9 +30,12 @@ const nodes = {
   meters: el("meters"),
   systemBar: el("systemBar"),
   systemPeak: el("systemPeak"),
+  micMeter: el("micMeter"),
+  micMeterName: el("micMeterName"),
   micBar: el("micBar"),
   micPeak: el("micPeak"),
   transport: el("transport"),
+  mute: el("mute") as HTMLButtonElement,
   pause: el("pause") as HTMLButtonElement,
   stop: el("stop") as HTMLButtonElement,
   micRow: el("micRow") as HTMLButtonElement,
@@ -126,6 +129,41 @@ function renderMeters(state: UiState): void {
   }
 }
 
+function renderMuteControl(state: UiState): void {
+  if (!state.micEnabled || !state.micPermission) {
+    nodes.mute.disabled = true;
+    nodes.mute.textContent = "Mic Off";
+    nodes.mute.classList.remove("muted");
+    nodes.micMeterName.textContent = "Mic (Off)";
+    nodes.micMeter.classList.add("muted");
+    return;
+  }
+  nodes.mute.disabled = false;
+  nodes.mute.textContent = state.micMuted ? "Unmute" : "Mute";
+  nodes.mute.classList.toggle("muted", state.micMuted);
+  nodes.micMeterName.textContent = state.micMuted ? "Mic (Muted)" : "Mic";
+  nodes.micMeter.classList.toggle("muted", state.micMuted);
+}
+
+function renderMicPicker(state: UiState): void {
+  if (!state.micEnabled) {
+    nodes.micName.textContent = "Off (Mac audio only)";
+  } else {
+    const selected = state.mics.find((mic) => mic.id === state.selectedMicID);
+    nodes.micName.textContent = selected ? selected.name : "System default";
+  }
+  nodes.micNote.hidden = state.micPermission || !state.micEnabled;
+}
+
+function renderFooter(state: UiState): void {
+  nodes.output.textContent = state.currentOutput;
+  nodes.hotkey.textContent = state.hotkey;
+  nodes.hotkey.classList.toggle("taken", !state.hotkeyRegistered);
+  nodes.hotkey.title = state.hotkeyRegistered ? "" : `${state.hotkey} is taken by another app`;
+  nodes.message.textContent = state.message ?? "";
+  nodes.message.hidden = !state.message;
+}
+
 function render(state: UiState): void {
   const recording = state.state !== "idle";
   nodes.root.dataset.state = state.state;
@@ -145,26 +183,19 @@ function render(state: UiState): void {
   nodes.timer.textContent = formatTime(state.elapsedSeconds);
   nodes.pause.textContent = state.state === "paused" ? "Resume" : "Pause";
 
+  renderMuteControl(state);
   renderMeters(state);
   if (recording && !blocked) startPeakLoop();
   else stopPeakLoop();
 
-  const selected = state.mics.find((mic) => mic.id === state.selectedMicID);
-  nodes.micName.textContent = selected ? selected.name : "System default";
-  nodes.micNote.hidden = state.micPermission;
-
-  nodes.output.textContent = state.currentOutput;
-  nodes.hotkey.textContent = state.hotkey;
-  nodes.hotkey.classList.toggle("taken", !state.hotkeyRegistered);
-  nodes.hotkey.title = state.hotkeyRegistered ? "" : `${state.hotkey} is taken by another app`;
-
-  nodes.message.textContent = state.message ?? "";
-  nodes.message.hidden = !state.message;
+  renderMicPicker(state);
+  renderFooter(state);
 }
 
 nodes.start.addEventListener("click", () => void window.talkTrace.toggleRecording());
 nodes.stop.addEventListener("click", () => void window.talkTrace.toggleRecording());
 nodes.pause.addEventListener("click", () => void window.talkTrace.togglePause());
+nodes.mute.addEventListener("click", () => void window.talkTrace.toggleMicMute());
 nodes.micRow.addEventListener("click", () => void window.talkTrace.openMicMenu());
 nodes.micNoteAction.addEventListener("click", () => void window.talkTrace.openPermission("mic"));
 nodes.reveal.addEventListener("click", () => void window.talkTrace.revealLastFile());

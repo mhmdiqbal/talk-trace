@@ -15,7 +15,8 @@ export type Command =
     }
   | { cmd: "pause" }
   | { cmd: "resume" }
-  | { cmd: "stop" };
+  | { cmd: "stop" }
+  | { cmd: "muteMic"; muted: boolean };
 
 export type HelperEvent =
   | { ev: "ready"; pid: number }
@@ -24,6 +25,7 @@ export type HelperEvent =
   | { ev: "started"; path: string; mic: boolean }
   | { ev: "level"; system: number; mic: number }
   | { ev: "state"; state: RecorderState }
+  | { ev: "micMuted"; muted: boolean }
   | {
       ev: "stopped";
       path: string;
@@ -41,12 +43,16 @@ export type UiState = {
   micPermission: boolean;
   mics: MicDevice[];
   selectedMicID: string | null;
+  micEnabled: boolean;
+  micMuted: boolean;
   currentOutput: string;
   systemLevel: number;
   micLevel: number;
   elapsedSeconds: number;
   hotkey: string;
   hotkeyRegistered: boolean;
+  muteHotkey: string;
+  muteHotkeyRegistered: boolean;
   lastFile: string | null;
   message: string | null;
   accentColor: string;

@@ -33,6 +33,8 @@ func handle(_ command: Command) {
         recorder.resume()
     case .stop:
         async { await recorder.stop() }
+    case .muteMic(let muted):
+        recorder.setMicMuted(muted)
     }
 }
 

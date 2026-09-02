@@ -16,3 +16,9 @@ export function newRecordingPath(now = new Date()): string {
   fs.mkdirSync(dir, { recursive: true });
   return path.join(dir, name);
 }
+
+export function resourcePath(name: string, isPackaged: boolean, appPath: string): string {
+  return isPackaged
+    ? path.join(process.resourcesPath, name)
+    : path.join(appPath, "resources", name);
+}

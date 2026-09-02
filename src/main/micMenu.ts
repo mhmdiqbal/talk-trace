@@ -5,7 +5,8 @@ export type MicMenuArgs = {
   window: BrowserWindow;
   mics: MicDevice[];
   selectedMicID: string | null;
-  onPick: (micID: string | null) => void;
+  micEnabled: boolean;
+  onPick: (enabled: boolean, micID: string | null) => void;
   onOpenChange: (open: boolean) => void;
 };
 
@@ -14,17 +15,23 @@ export type MicMenuArgs = {
 export function openMicMenu(args: MicMenuArgs): void {
   const menu = Menu.buildFromTemplate([
     {
-      label: "System default",
+      label: "Off (Mac audio only)",
       type: "checkbox",
-      checked: args.selectedMicID === null,
-      click: () => { args.onPick(null); },
+      checked: !args.micEnabled,
+      click: () => { args.onPick(false, args.selectedMicID); },
     },
     { type: "separator" },
+    {
+      label: "System default",
+      type: "checkbox",
+      checked: args.micEnabled && args.selectedMicID === null,
+      click: () => { args.onPick(true, null); },
+    },
     ...args.mics.map((mic) => ({
       label: mic.name,
       type: "checkbox" as const,
-      checked: mic.id === args.selectedMicID,
-      click: () => { args.onPick(mic.id); },
+      checked: args.micEnabled && mic.id === args.selectedMicID,
+      click: () => { args.onPick(true, mic.id); },
     })),
   ]);
 

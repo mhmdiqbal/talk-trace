@@ -38,8 +38,8 @@
               <div id="systemPeak" class="peak" hidden></div>
             </div>
           </div>
-          <div class="meter">
-            <span class="meterName">Mic</span>
+          <div id="micMeter" class="meter">
+            <span id="micMeterName" class="meterName">Mic</span>
             <div class="track">
               <div id="micBar" class="fill mic"></div>
               <div id="micPeak" class="peak" hidden></div>
@@ -48,6 +48,7 @@
         </div>
 
         <div id="transport" class="transport" hidden>
+          <button id="mute" class="button mute" type="button">Mute</button>
           <button id="pause" class="button" type="button">Pause</button>
           <button id="stop" class="button stop" type="button">Stop</button>
         </div>

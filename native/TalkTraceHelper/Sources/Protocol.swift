@@ -15,6 +15,7 @@ enum Command {
     case pause
     case resume
     case stop
+    case muteMic(Bool)
 }
 
 enum CommandError: Error, CustomStringConvertible {
@@ -44,6 +45,11 @@ extension Command {
         case "pause": return .pause
         case "resume": return .resume
         case "stop": return .stop
+        case "muteMic":
+            guard let muted = object["muted"] as? Bool else {
+                throw CommandError.missingField("muted")
+            }
+            return .muteMic(muted)
         case "start":
             guard let path = object["path"] as? String else {
                 throw CommandError.missingField("path")
