@@ -16,6 +16,8 @@
     "build:copy": "mkdir -p dist/renderer/icons && cp src/renderer/index.html src/renderer/tokens.css src/renderer/style.css dist/renderer/ && cp src/renderer/icons/*.svg dist/renderer/icons/",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.renderer.json",
     "lint": "./scripts/lint.sh",
+    "lint:sh": "shellcheck scripts/*.sh",
+    "lint:shell": "shellcheck scripts/*.sh",
     "sonar": "./scripts/sonar.sh",
     "build": "pnpm run build:helper && pnpm run build:transcriber && pnpm run build:ts && pnpm run build:copy",
     "start": "pnpm run build && electron .",

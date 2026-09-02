@@ -1,0 +1,3 @@
+# ShellCheck configuration
+# Enable idiomatic Bash rules and best practices
+enable=require-double-brackets,deprecate-which,avoid-nullary-conditions,avoid-negated-conditions,quote-safe-variables

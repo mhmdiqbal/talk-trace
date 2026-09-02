@@ -12,7 +12,7 @@ VENDOR="$ROOT/native/vendor"
 SRC="$VENDOR/whisper"
 STAMP="$VENDOR/.stamp-$TAG"
 
-if [ -f "$STAMP" ]; then
+if [[ -f "$STAMP" ]]; then
   echo "whisper: $TAG already built"
   exit 0
 fi
@@ -25,7 +25,7 @@ fi
 mkdir -p "$VENDOR"
 TARBALL="$VENDOR/whisper-$TAG.tar.gz"
 
-if [ ! -f "$TARBALL" ]; then
+if [[ ! -f "$TARBALL" ]]; then
   echo "whisper: downloading $TAG"
   curl -fsSL -o "$TARBALL.part" \
     "https://github.com/ggml-org/whisper.cpp/archive/refs/tags/$TAG.tar.gz"
@@ -34,7 +34,7 @@ fi
 
 echo "$TARBALL_SHA256  $TARBALL" | shasum -a 256 -c - >/dev/null
 
-if [ ! -d "$SRC" ]; then
+if [[ ! -d "$SRC" ]]; then
   echo "whisper: extracting"
   rm -rf "$VENDOR/whisper.cpp-${TAG#v}"
   tar xzf "$TARBALL" -C "$VENDOR"
@@ -63,12 +63,12 @@ cmake --build "$SRC/build" --config Release -j "$(sysctl -n hw.ncpu)" >/dev/null
 
 missing=0
 for lib in libwhisper.a libggml.a libggml-base.a libggml-cpu.a libggml-metal.a libggml-blas.a; do
-  if [ -z "$(find "$SRC/build" -name "$lib" -print -quit)" ]; then
+  if [[ -z "$(find "$SRC/build" -name "$lib" -print -quit)" ]]; then
     echo "whisper: missing $lib" >&2
     missing=1
   fi
 done
-[ "$missing" -eq 0 ] || exit 1
+[[ "$missing" -eq 0 ]] || exit 1
 
 touch "$STAMP"
 echo "whisper: $TAG built -> $SRC/build"
