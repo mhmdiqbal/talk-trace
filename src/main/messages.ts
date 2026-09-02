@@ -13,7 +13,7 @@ export function helperExitMessage(
   code: number | null,
   signal: string | null,
 ): string | null {
-  if (giveUp) return "The audio helper keeps crashing. Quit Recorder and check Console for details.";
+  if (giveUp) return "The audio helper keeps crashing. Quit TalkTrace and check Console for details.";
   if (!wasRecording) return null;
   return `The audio helper stopped during a recording (code ${String(code ?? signal)}). The file may be short.`;
 }

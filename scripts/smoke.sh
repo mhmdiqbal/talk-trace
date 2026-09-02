@@ -8,7 +8,7 @@ FIFO=$(mktemp -u /tmp/rec.XXXXXX.fifo)
 mkfifo "$FIFO"
 rm -f "$OUT"
 
-"$ROOT/resources/RecorderHelper" < "$FIFO" | grep --line-buffered -v '"ev":"level"' &
+"$ROOT/resources/TalkTraceHelper" < "$FIFO" | grep --line-buffered -v '"ev":"level"' &
 HELPER=$!
 exec 3>"$FIFO"
 

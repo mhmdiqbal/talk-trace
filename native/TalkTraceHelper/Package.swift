@@ -2,11 +2,11 @@
 import PackageDescription
 
 let package = Package(
-    name: "RecorderHelper",
+    name: "TalkTraceHelper",
     platforms: [.macOS(.v15)],
     targets: [
         .executableTarget(
-            name: "RecorderHelper",
+            name: "TalkTraceHelper",
             path: "Sources",
             swiftSettings: [.swiftLanguageMode(.v5)]
         )

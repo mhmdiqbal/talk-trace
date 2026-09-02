@@ -118,7 +118,10 @@ final class Transcriber {
 /// dozens of lines per run, so both have to be muted.
 func silenceWhisperLog() {
     let sink: ggml_log_callback = { _, text, _ in
-        guard ProcessInfo.processInfo.environment["RECORDER_DEBUG"] == "1", let text else { return }
+        let debug =
+            ProcessInfo.processInfo.environment["TALKTRACE_DEBUG"]
+            ?? ProcessInfo.processInfo.environment["RECORDER_DEBUG"]
+        guard debug == "1", let text else { return }
         fputs(String(cString: text), stderr)
     }
     whisper_log_set(sink, nil)

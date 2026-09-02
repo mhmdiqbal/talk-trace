@@ -28,13 +28,16 @@ let suspended = false;
 let quitting = false;
 
 function disabled(): boolean {
-  return process.env.RECORDER_NO_TRANSCRIBE === "1";
+  return (
+    process.env.TALKTRACE_NO_TRANSCRIBE === "1" ||
+    process.env.RECORDER_NO_TRANSCRIBE === "1"
+  );
 }
 
 function binaryPath(): string {
   return app.isPackaged
-    ? path.join(process.resourcesPath, "RecorderTranscriber")
-    : path.join(app.getAppPath(), "resources", "RecorderTranscriber");
+    ? path.join(process.resourcesPath, "TalkTraceTranscriber")
+    : path.join(app.getAppPath(), "resources", "TalkTraceTranscriber");
 }
 
 function baseOf(audio: string): string {

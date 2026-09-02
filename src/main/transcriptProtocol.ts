@@ -1,5 +1,5 @@
 /**
- * Mirrors native/RecorderTranscriber/Sources/RecorderTranscriber/TranscriptProtocol.swift.
+ * Mirrors native/TalkTraceTranscriber/Sources/TalkTraceTranscriber/TranscriptProtocol.swift.
  * The two files are synced by hand, like protocol.ts and Protocol.swift.
  *
  * There is no command type. The transcriber takes its input on argv and a

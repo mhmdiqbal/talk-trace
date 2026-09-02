@@ -130,7 +130,7 @@ function setTrayIcon(): void {
   );
   icon.setTemplateImage(!recording);
   tray.setImage(icon);
-  tray.setToolTip(recording ? "Recorder — recording" : "Recorder");
+  tray.setToolTip(recording ? "TalkTrace — recording" : "TalkTrace");
 }
 
 // MARK: elapsed time. Pause removes the gap, so we count recorded time only.
@@ -195,7 +195,8 @@ function togglePause(): void {
 // MARK: helper events
 
 function onHelperEvent(event: HelperEvent): void {
-  if (process.env.RECORDER_DEBUG && event.ev !== "level") {
+  const debug = process.env.TALKTRACE_DEBUG ?? process.env.RECORDER_DEBUG;
+  if (debug && event.ev !== "level") {
     process.stderr.write(`[event] ${JSON.stringify(event)}\n`);
   }
 
@@ -408,7 +409,7 @@ void app.whenReady().then(() => {
   const icon = nativeImage.createFromPath(resource("trayTemplate.png"));
   icon.setTemplateImage(true);
   tray = new Tray(icon);
-  tray.setToolTip("Recorder");
+  tray.setToolTip("TalkTrace");
   tray.on("click", togglePopup);
   tray.on("right-click", togglePopup);
 
@@ -437,7 +438,9 @@ void app.whenReady().then(() => {
 
   registerIpc();
 
-  if (process.env.RECORDER_SELFTEST === "1") {
+  const selftest =
+    process.env.TALKTRACE_SELFTEST ?? process.env.RECORDER_SELFTEST;
+  if (selftest === "1") {
     runSelfTest({
       toggleRecording,
       togglePause,

@@ -1,4 +1,4 @@
-# Recorder
+# TalkTrace
 
 A macOS menu bar app that records what your Mac plays, plus your microphone,
 into one `.m4a` file.
@@ -29,7 +29,7 @@ It runs on your Mac. Nothing is uploaded.
 
 - **English only.** A recording in another language gives nonsense, not an error.
 - **First launch downloads 488 MB**, the `ggml-small.en` Whisper model, into
-  `~/Library/Application Support/Recorder/models/`. The size and SHA-1 are
+  `~/Library/Application Support/TalkTrace/models/`. The size and SHA-1 are
   checked before the file is used. Until it lands, recordings queue up.
 - While the job runs you see `Transcribing 40%` in the popup message line.
 - A file ending in `.partial.srt` is a job that was cut short, by quitting or by
@@ -40,7 +40,7 @@ It runs on your Mac. Nothing is uploaded.
 - Jobs run one at a time, in order.
 - A recording with no speech gets no file at all, and the message says
   `No speech found`.
-- Set `RECORDER_NO_TRANSCRIBE=1` to turn the whole feature off, including the
+- Set `TALKTRACE_NO_TRANSCRIBE=1` to turn the whole feature off, including the
   download.
 
 Speed on Apple silicon is roughly 50x faster than real time, so an hour of audio
@@ -67,10 +67,10 @@ System Settings page.
 The grant belongs to the audio helper, not to Electron. The helper gets its own
 code identity: `scripts/build-helper.sh` embeds `build/helper-Info.plist` into
 the binary with `-sectcreate __TEXT __info_plist`, then signs it as
-`com.mmdiqbal.recorder.helper` with an Apple Development certificate.
+`com.mmdiqbal.talktrace.helper` with an Apple Development certificate.
 
 This was tested, and it means the grant holds no matter who starts the helper —
-a shell, `pnpm start`, `Recorder.app` in `release/`, or `Recorder.app` in
+a shell, `pnpm start`, `TalkTrace.app` in `release/`, or `TalkTrace.app` in
 `/Applications`. Because the certificate is stable, the grant also survives a
 rebuild. `electron-builder` re-signs the helper when it packages, and both the
 identifier and the `audio-input` entitlement survive that.
@@ -80,7 +80,7 @@ identifier and the `audio-input` entitlement survive that.
 ```bash
 pnpm install
 pnpm start          # builds both binaries and the TypeScript, then runs Electron
-pnpm run dist       # builds release/mac-arm64/Recorder.app and release/Recorder-1.0.0-arm64.dmg
+pnpm run dist       # builds release/mac-arm64/TalkTrace.app and release/TalkTrace-1.0.0-arm64.dmg
 ```
 
 The first build also downloads and compiles whisper.cpp into `native/vendor/`,
@@ -90,14 +90,14 @@ makes every later build skip it.
 This project uses pnpm 11, pinned by the `packageManager` field. Run
 `corepack enable` once so the pinned version is the one that runs.
 
-To install locally, open the generated `.dmg` in `release/Recorder-1.0.0-arm64.dmg`
-and drag Recorder into `/Applications` (or directly copy
-`release/mac-arm64/Recorder.app` to `/Applications`). Look for the ring icon in
+To install locally, open the generated `.dmg` in `release/TalkTrace-1.0.0-arm64.dmg`
+and drag TalkTrace into `/Applications` (or directly copy
+`release/mac-arm64/TalkTrace.app` to `/Applications`). Look for the ring icon in
 the menu bar. It turns into a red dot while recording.
 
 `pnpm start` automatically detects any valid `Apple Development` certificate in
 your macOS Keychain. If none is found, it falls back to ad-hoc (`-`) signing.
-You can specify a certificate explicitly with `RECORDER_IDENTITY="..."`.
+You can specify a certificate explicitly with `TALKTRACE_IDENTITY="..."`.
 For distribution outside development, sign with a Developer ID Application
 certificate and notarize via `CSC_NAME="..." pnpm run dist`.
 
@@ -114,7 +114,7 @@ pnpm typecheck    # types only, writes nothing
 |---|---|---|
 | types | `tsc --noEmit` | both tsconfigs |
 | TypeScript | ESLint 10 + typescript-eslint `strictTypeChecked` | `src/`, `build/*.cjs` |
-| Swift | `swift format lint --strict` | `native/RecorderHelper/Sources` |
+| Swift | `swift format lint --strict` | `native/TalkTraceHelper/Sources`, `native/TalkTraceTranscriber/Sources` |
 | shell | `shellcheck` | `scripts/*.sh` |
 | Python | `ruff check` and `ruff format --check` | `scripts/*.py` |
 
@@ -142,7 +142,7 @@ pnpm sonar                     # start the server if needed, then scan
 ```
 
 **Swift is not analysed.** SonarQube Community has no Swift analyzer at any
-version, so `native/RecorderHelper` is invisible here. `swift format lint
+version, so `native/TalkTraceHelper` is invisible here. `swift format lint
 --strict` in `scripts/lint.sh` stays the only gate on that code. What Sonar
 sees is `src/**` TypeScript and `scripts/*.py`.
 
@@ -174,7 +174,7 @@ falls back to weaker, non type-aware rules.
 
 Two processes:
 
-- **`native/RecorderHelper`** — Swift. Owns all audio. Runs `SCStream` with
+- **`native/TalkTraceHelper`** — Swift. Owns all audio. Runs `SCStream` with
   `capturesAudio` and `captureMicrophone`, resamples the mic to the write
   format, mixes, and writes the `.m4a` with `AVAudioFile`.
 - **`src/main`** — Electron. Owns the menu bar icon, the popup, the hotkey, the
@@ -182,7 +182,7 @@ Two processes:
 
 They talk over stdin and stdout, one JSON object per line. Electron sends
 commands, the helper sends events. See `src/main/protocol.ts` and
-`native/RecorderHelper/Sources/Protocol.swift` — keep those two in step by hand.
+`native/TalkTraceHelper/Sources/Protocol.swift` — keep those two in step by hand.
 
 Closing stdin does **not** stop a recording. Only a `stop` command, a signal, or
 the parent process dying does. That way a hiccup in the pipe cannot lose a file.
@@ -199,7 +199,7 @@ that from coming back:
 - The helper stops itself if `getppid()` becomes 1, so an orphan cannot record
   until the disk fills.
 
-`Trace.swift` writes to the file named by `RECORDER_TRACE`. Use it when
+`Trace.swift` writes to the file named by `TALKTRACE_TRACE`. Use it when
 debugging shutdown — stdout and stderr are exactly what you cannot trust while
 the process is dying.
 
@@ -216,29 +216,29 @@ python3 scripts/energy.py /tmp/t.m4a             # RMS and peak of a file
 python3 scripts/spectrum.py /tmp/t.m4a           # dominant frequencies
 
 # drive the whole Electron app with no key presses
-RECORDER_DEBUG=1 RECORDER_SELFTEST=1 pnpm exec electron .
+TALKTRACE_DEBUG=1 TALKTRACE_SELFTEST=1 pnpm exec electron .
 ```
 
-`RECORDER_DEBUG=1` prints every helper event. `RECORDER_SELFTEST=1` runs a
+`TALKTRACE_DEBUG=1` prints every helper event. `TALKTRACE_SELFTEST=1` runs a
 start / pause / resume / stop cycle on a timer.
 
 The `stopped` event carries `micFramesMixed`. Divide it by
 `seconds × 48000` — it should be about 0.99. If it is 0, the mic is not
 reaching the file.
 
-`RECORDER_ATTACH_SCREEN=1` attaches a `.screen` output and throws the frames
+`TALKTRACE_ATTACH_SCREEN=1` attaches a `.screen` output and throws the frames
 away. It is not needed (audio works without it) but it is kept for debugging.
 
-`RECORDER_TRACE=/tmp/trace.log` makes the helper append its lifecycle to a file.
+`TALKTRACE_TRACE=/tmp/trace.log` makes the helper append its lifecycle to a file.
 
-`RECORDER_NO_TRANSCRIBE=1` turns transcripts off. With `RECORDER_DEBUG=1` the
+`TALKTRACE_NO_TRANSCRIBE=1` turns transcripts off. With `TALKTRACE_DEBUG=1` the
 transcriber also prints the whisper and ggml logs, which are silent otherwise.
 
 You can run the transcriber by hand:
 
 ```bash
-./resources/RecorderTranscriber \
-  --model ~/Library/Application\ Support/Recorder/models/ggml-small.en.bin \
+./resources/TalkTraceTranscriber \
+  --model ~/Library/Application\ Support/TalkTrace/models/ggml-small.en.bin \
   --audio ~/Music/Recordings/SOME.m4a \
   --out /tmp/out.srt
 ```
@@ -250,7 +250,7 @@ exits 0 and leaves a valid SRT that ends on a whole block.
 
 ```bash
 pnpm run dist
-rm -rf /Applications/Recorder.app && cp -R release/mac-arm64/Recorder.app /Applications/
+rm -rf /Applications/TalkTrace.app && cp -R release/mac-arm64/TalkTrace.app /Applications/
 pnpm test         # runs lint first, then scripts/regression.sh, 9 checks
 ```
 
@@ -265,7 +265,7 @@ the model is not on the machine.
 ## Files
 
 ```
-native/RecorderHelper/Sources/
+native/TalkTraceHelper/Sources/
   main.swift          stdin loop, signals, command dispatch
   Recorder.swift      SCStream setup, mixing, writing
   Resampler.swift     AVAudioConverter wrapper, one per queue
@@ -275,7 +275,7 @@ native/RecorderHelper/Sources/
   Permissions.swift   screen and mic checks
   Protocol.swift      JSON commands and events
 
-native/RecorderTranscriber/Sources/RecorderTranscriber/
+native/TalkTraceTranscriber/Sources/TalkTraceTranscriber/
   main.swift              argv, signals, the chunk loop
   Decode.swift            .m4a to 16 kHz mono float, in ten minute chunks
   Transcribe.swift        whisper.cpp calls and its callbacks
@@ -300,7 +300,7 @@ this can clip. Change `systemGain` and `micGain` at the top of the class to
 
 ## Privacy & Security
 
-Recorder is built with local-first privacy:
+TalkTrace is built with local-first privacy:
 - Audio capture and mic inputs are mixed in-memory and saved directly to your local disk (`~/Music/Recordings/`).
 - Local speech-to-text is powered by `whisper.cpp` with Apple Silicon Metal acceleration.
 - Zero analytics, telemetry, or remote network requests.

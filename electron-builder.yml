@@ -1,5 +1,5 @@
-appId: com.mmdiqbal.recorder
-productName: Recorder
+appId: com.mmdiqbal.talktrace
+productName: TalkTrace
 copyright: Muhamad Iqbal
 
 afterPack: build/afterPack.cjs
@@ -13,10 +13,10 @@ files:
   - package.json
 
 extraResources:
-  - from: resources/RecorderHelper
-    to: RecorderHelper
-  - from: resources/RecorderTranscriber
-    to: RecorderTranscriber
+  - from: resources/TalkTraceHelper
+    to: TalkTraceHelper
+  - from: resources/TalkTraceTranscriber
+    to: TalkTraceTranscriber
   - from: resources/trayTemplate.png
     to: trayTemplate.png
   - from: resources/trayTemplate@2x.png
@@ -41,10 +41,10 @@ mac:
   extendInfo:
     LSUIElement: true
     NSScreenCaptureUsageDescription: >-
-      Recorder needs Screen Recording access to capture the sound your Mac
+      TalkTrace needs Screen Recording access to capture the sound your Mac
       plays. No picture is ever captured or saved.
     NSMicrophoneUsageDescription: >-
-      Recorder needs the microphone so your voice is mixed into the recording.
+      TalkTrace needs the microphone so your voice is mixed into the recording.
 
 dmg:
   artifactName: "${productName}-${version}-${arch}.${ext}"

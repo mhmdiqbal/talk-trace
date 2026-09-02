@@ -13,7 +13,12 @@ export function runSelfTest(actions: Actions): void {
       body();
     }, afterMs);
 
-  const recordMs = Number(process.env.RECORDER_SELFTEST_SECONDS ?? 12) * 1000;
+  const recordMs =
+    Number(
+      process.env.TALKTRACE_SELFTEST_SECONDS ??
+      process.env.RECORDER_SELFTEST_SECONDS ??
+      12,
+    ) * 1000;
   const pauseMs = recordMs >= 60_000 ? 0 : 4000;
   const half = Math.round(recordMs / 2);
 

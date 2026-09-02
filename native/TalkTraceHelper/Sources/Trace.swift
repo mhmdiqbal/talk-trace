@@ -3,7 +3,9 @@ import Foundation
 /// Appends to a file, so the last moments of the process are visible even when
 /// stdout and stderr are broken pipes. Off unless RECORDER_TRACE is set.
 enum Trace {
-    private static let path = ProcessInfo.processInfo.environment["RECORDER_TRACE"]
+    private static let path =
+        ProcessInfo.processInfo.environment["TALKTRACE_TRACE"]
+        ?? ProcessInfo.processInfo.environment["RECORDER_TRACE"]
     private static let lock = NSLock()
 
     static func mark(_ message: String) {

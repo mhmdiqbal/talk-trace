@@ -223,7 +223,10 @@ final class Recorder: NSObject {
             try newStream.addStreamOutput(self, type: .microphone, sampleHandlerQueue: micQueue)
         }
         // Build order step 2: prove whether a stream with no .screen output starts at all.
-        if ProcessInfo.processInfo.environment["RECORDER_ATTACH_SCREEN"] == "1" {
+        let attachScreen =
+            ProcessInfo.processInfo.environment["TALKTRACE_ATTACH_SCREEN"]
+            ?? ProcessInfo.processInfo.environment["RECORDER_ATTACH_SCREEN"]
+        if attachScreen == "1" {
             try newStream.addStreamOutput(self, type: .screen, sampleHandlerQueue: screenQueue)
             Emit.log("screen output attached for the isolation test")
         }

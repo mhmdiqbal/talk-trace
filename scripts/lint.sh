@@ -23,8 +23,8 @@ pnpm exec eslint .
 echo "==> swift-format"
 swift format lint --strict --recursive \
   --configuration "$ROOT/.swift-format" \
-  native/RecorderHelper/Sources \
-  native/RecorderTranscriber/Sources
+  native/TalkTraceHelper/Sources \
+  native/TalkTraceTranscriber/Sources
 
 echo "==> shellcheck"
 shellcheck scripts/*.sh

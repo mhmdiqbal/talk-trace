@@ -10,8 +10,8 @@ export class Helper extends EventEmitter {
 
   get binaryPath(): string {
     return app.isPackaged
-      ? path.join(process.resourcesPath, "RecorderHelper")
-      : path.join(app.getAppPath(), "resources", "RecorderHelper");
+      ? path.join(process.resourcesPath, "TalkTraceHelper")
+      : path.join(app.getAppPath(), "resources", "TalkTraceHelper");
   }
 
   get running(): boolean {

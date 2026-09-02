@@ -1,9 +1,9 @@
 import type { UiState } from "../main/protocol";
-import type { RecorderApi } from "../preload/preload";
+import type { TalkTraceApi } from "../preload/preload";
 
 declare global {
   interface Window {
-    recorder: RecorderApi;
+    talkTrace: TalkTraceApi;
   }
 }
 
@@ -107,9 +107,9 @@ function stopPeakLoop(): void {
 function renderTakeover(state: UiState): boolean {
   if (state.screenPermission) return false;
   nodes.takeoverText.innerHTML =
-    "<strong>Screen Recording is off.</strong> Recorder needs it to capture what your Mac plays. No picture is saved.";
+    "<strong>Screen Recording is off.</strong> TalkTrace needs it to capture what your Mac plays. No picture is saved.";
   nodes.takeoverAction.textContent = "Open Screen Recording settings";
-  nodes.takeoverAction.onclick = () => void window.recorder.openPermission("screen");
+  nodes.takeoverAction.onclick = () => void window.talkTrace.openPermission("screen");
   return true;
 }
 
@@ -162,13 +162,13 @@ function render(state: UiState): void {
   nodes.message.hidden = !state.message;
 }
 
-nodes.start.addEventListener("click", () => void window.recorder.toggleRecording());
-nodes.stop.addEventListener("click", () => void window.recorder.toggleRecording());
-nodes.pause.addEventListener("click", () => void window.recorder.togglePause());
-nodes.micRow.addEventListener("click", () => void window.recorder.openMicMenu());
-nodes.micNoteAction.addEventListener("click", () => void window.recorder.openPermission("mic"));
-nodes.reveal.addEventListener("click", () => void window.recorder.revealLastFile());
-nodes.quit.addEventListener("click", () => void window.recorder.quit());
+nodes.start.addEventListener("click", () => void window.talkTrace.toggleRecording());
+nodes.stop.addEventListener("click", () => void window.talkTrace.toggleRecording());
+nodes.pause.addEventListener("click", () => void window.talkTrace.togglePause());
+nodes.micRow.addEventListener("click", () => void window.talkTrace.openMicMenu());
+nodes.micNoteAction.addEventListener("click", () => void window.talkTrace.openPermission("mic"));
+nodes.reveal.addEventListener("click", () => void window.talkTrace.revealLastFile());
+nodes.quit.addEventListener("click", () => void window.talkTrace.quit());
 
-window.recorder.onState(render);
-void window.recorder.getState().then(render);
+window.talkTrace.onState(render);
+void window.talkTrace.getState().then(render);

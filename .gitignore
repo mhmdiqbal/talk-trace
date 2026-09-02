@@ -6,8 +6,8 @@ release/
 .eslintcache
 
 # Native binaries & SwiftPM / Xcode build artifacts
-resources/RecorderHelper
-resources/RecorderTranscriber
+resources/TalkTraceHelper
+resources/TalkTraceTranscriber
 native/vendor/
 .build/
 .swiftpm/

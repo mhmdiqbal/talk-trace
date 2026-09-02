@@ -1,12 +1,12 @@
-# Contributing to Recorder
+# Contributing to TalkTrace
 
-Thank you for your interest in contributing to Recorder! This document outlines the development workflow, prerequisites, architecture rules, and quality gates for the project.
+Thank you for your interest in contributing to TalkTrace! This document outlines the development workflow, prerequisites, architecture rules, and quality gates for the project.
 
 ---
 
 ## Prerequisites
 
-To build and test Recorder locally, you will need:
+To build and test TalkTrace locally, you will need:
 
 - **Hardware & OS**: Apple Silicon Mac (M1/M2/M3/M4) running **macOS 15 (Sequoia)** or later (`ScreenCaptureKit` audio capture requires macOS 15+).
 - **Node.js & Package Manager**: Node.js `>= 22` and **pnpm 11** (run `corepack enable` to use the pinned version).
@@ -43,21 +43,21 @@ To build and test Recorder locally, you will need:
 ## Code Signing & Permissions
 
 ### Code Signing
-Recorder relies on a signed audio helper binary (`RecorderHelper`) to maintain persistent macOS `Screen Recording` and `Microphone` TCC grants.
+TalkTrace relies on a signed audio helper binary (`TalkTraceHelper`) to maintain persistent macOS `Screen Recording` and `Microphone` TCC grants.
 
 - By default, `scripts/build-helper.sh` and `scripts/build-transcriber.sh` auto-detect any valid `Apple Development` certificate in your macOS Keychain.
 - If you have multiple certificates or want to specify one explicitly:
   ```bash
-  RECORDER_IDENTITY="Apple Development: Your Name (TEAMID)" pnpm start
+  TALKTRACE_IDENTITY="Apple Development: Your Name (TEAMID)" pnpm start
   ```
 - If no Apple Developer certificate is found, build scripts fall back to ad-hoc (`-`) signing.
 
 ### macOS Permissions
-`Recorder.app` requires two macOS permissions:
+`TalkTrace.app` requires two macOS permissions:
 1. **Screen Recording**: Required by macOS `ScreenCaptureKit` to capture system audio. No video is ever recorded.
 2. **Microphone**: Required to record your voice into the audio mix.
 
-The permissions belong to the helper binary (`RecorderHelper`), not Electron. Grant them when prompted or via **System Settings > Privacy & Security**.
+The permissions belong to the helper binary (`TalkTraceHelper`), not Electron. Grant them when prompted or via **System Settings > Privacy & Security**.
 
 ---
 
@@ -67,15 +67,15 @@ When modifying the codebase, please adhere to these core rules:
 
 ### 1. Dual Protocol Synchronization
 There are two protocol pairs that must remain in sync by hand:
-- **Audio Protocol**: [`src/main/protocol.ts`](file:///Users/mmdiqbal/Projects/record-app/src/main/protocol.ts) ↔ [`native/RecorderHelper/Sources/Protocol.swift`](file:///Users/mmdiqbal/Projects/record-app/native/RecorderHelper/Sources/Protocol.swift)
-- **Transcript Protocol**: [`src/main/transcriptProtocol.ts`](file:///Users/mmdiqbal/Projects/record-app/src/main/transcriptProtocol.ts) ↔ [`native/RecorderTranscriber/Sources/RecorderTranscriber/TranscriptProtocol.swift`](file:///Users/mmdiqbal/Projects/record-app/native/RecorderTranscriber/Sources/RecorderTranscriber/TranscriptProtocol.swift)
+- **Audio Protocol**: [`src/main/protocol.ts`](file:///Users/mmdiqbal/Projects/record-app/src/main/protocol.ts) ↔ [`native/TalkTraceHelper/Sources/Protocol.swift`](file:///Users/mmdiqbal/Projects/record-app/native/TalkTraceHelper/Sources/Protocol.swift)
+- **Transcript Protocol**: [`src/main/transcriptProtocol.ts`](file:///Users/mmdiqbal/Projects/record-app/src/main/transcriptProtocol.ts) ↔ [`native/TalkTraceTranscriber/Sources/TalkTraceTranscriber/TranscriptProtocol.swift`](file:///Users/mmdiqbal/Projects/record-app/native/TalkTraceTranscriber/Sources/TalkTraceTranscriber/TranscriptProtocol.swift)
 
 Any change to command or event payloads must update both the TypeScript definition and the Swift Codable struct together.
 
 ### 2. Three-Process Architecture
 - **Electron Main/Renderer (`src/`)**: Owns the menu bar tray, popup UI, global hotkeys, and application lifecycle.
-- **RecorderHelper (`native/RecorderHelper/`)**: Signed Swift binary holding the audio pipeline. Communicates with Electron via newline-delimited JSON over stdout. Recording state lives in Swift as the source of truth.
-- **RecorderTranscriber (`native/RecorderTranscriber/`)**: Standalone Swift binary embedding `whisper.cpp`. Spawned on-demand per transcription job.
+- **TalkTraceHelper (`native/TalkTraceHelper/`)**: Signed Swift binary holding the audio pipeline. Communicates with Electron via newline-delimited JSON over stdout. Recording state lives in Swift as the source of truth.
+- **TalkTraceTranscriber (`native/TalkTraceTranscriber/`)**: Standalone Swift binary embedding `whisper.cpp`. Spawned on-demand per transcription job.
 
 ### 3. Popup Sizing & Vibrancy
 - The popup window uses macOS vibrancy (`vibrancy: "popover"`).
@@ -108,7 +108,7 @@ This runs all 5 linting passes and fails at the first error:
 ### Regression Testing
 ```bash
 pnpm run dist
-rm -rf /Applications/Recorder.app && cp -R release/mac-arm64/Recorder.app /Applications/
+rm -rf /Applications/TalkTrace.app && cp -R release/mac-arm64/TalkTrace.app /Applications/
 pnpm test
 ```
 The regression suite runs 9 automated checks verifying recording, pausing, mic levels, orphan cleanup, signal handling, and transcriber execution.

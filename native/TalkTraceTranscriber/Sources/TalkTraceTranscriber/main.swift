@@ -43,7 +43,7 @@ signal(SIGINT) { _ in abortRequested = 1 }
 do {
     guard let model = argument("--model"), let audio = argument("--audio"), let out = argument("--out")
     else {
-        throw TranscribeError.badArguments("usage: RecorderTranscriber --model M --audio A --out O")
+        throw TranscribeError.badArguments("usage: TalkTraceTranscriber --model M --audio A --out O")
     }
     try transcribe(model: model, audio: audio, out: out)
     exit(0)

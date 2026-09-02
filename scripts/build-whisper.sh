@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-# Builds whisper.cpp as static archives for the RecorderTranscriber binary.
+# Builds whisper.cpp as static archives for the TalkTraceTranscriber binary.
 # Everything lands in native/vendor, which is gitignored. A stamp file makes
 # repeat runs free.
 

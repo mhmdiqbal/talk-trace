@@ -3,8 +3,9 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 resolve_identity() {
-  if [ -n "${RECORDER_IDENTITY:-}" ]; then
-    echo "$RECORDER_IDENTITY"
+  local id="${TALKTRACE_IDENTITY:-${RECORDER_IDENTITY:-}}"
+  if [ -n "$id" ]; then
+    echo "$id"
     return
   fi
 
@@ -21,7 +22,7 @@ resolve_identity() {
 IDENTITY="$(resolve_identity)"
 if [ "$IDENTITY" = "-" ]; then
   echo "Notice: No Apple Development identity found in Keychain; using ad-hoc (-) signing."
-  echo "        Set RECORDER_IDENTITY=\"...\" to sign with a specific certificate."
+  echo "        Set TALKTRACE_IDENTITY=\"...\" to sign with a specific certificate."
 else
   echo "Signing transcriber with identity: $IDENTITY"
 fi
@@ -29,9 +30,9 @@ ENTITLEMENTS="$ROOT/build/entitlements.mac.plist"
 
 "$ROOT/scripts/build-whisper.sh"
 
-cd "$ROOT/native/RecorderTranscriber"
+cd "$ROOT/native/TalkTraceTranscriber"
 BIN_DIR="$(swift build -c release --arch arm64 --show-bin-path)"
-BINARY="$BIN_DIR/RecorderTranscriber"
+BINARY="$BIN_DIR/TalkTraceTranscriber"
 
 # SwiftPM does not track the whisper archives, so a rebuilt whisper leaves a
 # stale executable behind. Drop it to force a relink.
@@ -43,11 +44,11 @@ swift build -c release --arch arm64
 # code identity of its own for TCC to key on.
 codesign --force --timestamp=none --options runtime \
   --entitlements "$ENTITLEMENTS" \
-  --identifier com.mmdiqbal.recorder.transcriber \
+  --identifier com.mmdiqbal.talktrace.transcriber \
   --sign "$IDENTITY" \
   "$BINARY"
 
 mkdir -p "$ROOT/resources"
-cp "$BINARY" "$ROOT/resources/RecorderTranscriber"
-echo "transcriber -> $ROOT/resources/RecorderTranscriber"
-codesign -dv "$ROOT/resources/RecorderTranscriber" 2>&1 | grep -E "Identifier|Authority|Signature" | head -4
+cp "$BINARY" "$ROOT/resources/TalkTraceTranscriber"
+echo "transcriber -> $ROOT/resources/TalkTraceTranscriber"
+codesign -dv "$ROOT/resources/TalkTraceTranscriber" 2>&1 | grep -E "Identifier|Authority|Signature" | head -4

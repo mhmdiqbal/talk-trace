@@ -1,5 +1,5 @@
 {
-  "name": "recorder",
+  "name": "talk-trace",
   "version": "1.0.0",
   "description": "Records what your Mac plays, plus your microphone",
   "main": "dist/main/main.js",

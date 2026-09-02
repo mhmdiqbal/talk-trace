@@ -12,7 +12,7 @@ let headerFlags = [
 ]
 
 let package = Package(
-    name: "RecorderTranscriber",
+    name: "TalkTraceTranscriber",
     platforms: [.macOS(.v15)],
     targets: [
         .target(
@@ -22,9 +22,9 @@ let package = Package(
             cSettings: [.unsafeFlags(headerFlags)]
         ),
         .executableTarget(
-            name: "RecorderTranscriber",
+            name: "TalkTraceTranscriber",
             dependencies: ["CWhisper"],
-            path: "Sources/RecorderTranscriber",
+            path: "Sources/TalkTraceTranscriber",
             swiftSettings: [
                 .swiftLanguageMode(.v5),
                 .unsafeFlags(headerFlags.flatMap { ["-Xcc", $0] }),
