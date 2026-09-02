@@ -6,13 +6,19 @@ import {
   nativeImage,
   nativeTheme,
   powerSaveBlocker,
-  systemPreferences,
   Tray,
 } from "electron";
 import { Helper } from "./helper";
 import { registerIpc } from "./ipc";
 import { formatSeconds, helperExitMessage } from "./messages";
 import { newRecordingPath, resourcePath } from "./paths";
+import {
+  FALLBACK_ACCENT,
+  POPUP_HEIGHT_IDLE,
+  POPUP_WIDTH,
+  popupHeight,
+  readAccentColor,
+} from "./popupLayout";
 import { runSelfTest } from "./selftest";
 import * as settings from "./settings";
 import * as transcribe from "./transcribe";
@@ -22,13 +28,6 @@ const HOTKEY = "Alt+Command+R";
 const MUTE_HOTKEY = "Alt+Command+M";
 const MAX_RESPAWNS = 5;
 const SHUTDOWN_GRACE_MS = 5000;
-const POPUP_WIDTH = 300;
-const POPUP_HEIGHT_IDLE = 168;
-const POPUP_HEIGHT_BLOCKED = 208;
-const POPUP_HEIGHT_ACTIVE = 238;
-const POPUP_HEIGHT_MESSAGE_EXTRA = 38;
-const POPUP_HEIGHT_MIC_NOTE_EXTRA = 34;
-const FALLBACK_ACCENT = "#007aff";
 
 const helper = new Helper();
 let tray: Tray | null = null;
@@ -70,17 +69,6 @@ const ui: UiState = {
   reducedTransparency: false,
 };
 
-// getAccentColor returns RGBA hex with no leading "#", e.g. "007AFFFF".
-// That is a different channel order from BrowserWindow backgroundColor.
-function readAccentColor(): string {
-  try {
-    const rgba = systemPreferences.getAccentColor();
-    return /^[0-9a-f]{6,8}$/i.test(rgba) ? `#${rgba.slice(0, 6)}` : FALLBACK_ACCENT;
-  } catch {
-    return FALLBACK_ACCENT;
-  }
-}
-
 function resource(name: string): string {
   return resourcePath(name, app.isPackaged, app.getAppPath());
 }
@@ -91,23 +79,17 @@ function livePopup(): BrowserWindow | null {
   return popup && !popup.isDestroyed() ? popup : null;
 }
 
-// Mirrors the views the renderer can show. Only a missing Screen Recording
-// grant takes over the popup; the helper still records system audio when the
-// mic is denied, so that stays an inline note over the normal body.
-function popupHeight(): number {
-  const messageExtra = ui.message ? POPUP_HEIGHT_MESSAGE_EXTRA : 0;
-  if (!ui.screenPermission) return POPUP_HEIGHT_BLOCKED + messageExtra;
-  const base = ui.state === "idle" ? POPUP_HEIGHT_IDLE : POPUP_HEIGHT_ACTIVE;
-  const micNoteExtra = ui.micPermission || !ui.micEnabled ? 0 : POPUP_HEIGHT_MIC_NOTE_EXTRA;
-  return base + messageExtra + micNoteExtra;
+function ensurePopup(): BrowserWindow {
+  if (!popup || popup.isDestroyed()) popup = createPopup();
+  return popup;
 }
 
 // pushState runs on every level event, so resize only on a real change or the
 // macOS resize animation restarts ten times a second.
 function syncPopupHeight(): void {
   const window = livePopup();
-  if (!window) return;
-  const height = popupHeight();
+  if (!window || window.isDestroyed()) return;
+  const height = popupHeight(ui);
   if (height === appliedHeight) return;
   appliedHeight = height;
   const { x, y } = window.getBounds();
@@ -116,7 +98,10 @@ function syncPopupHeight(): void {
 
 function pushState(): void {
   syncPopupHeight();
-  livePopup()?.webContents.send("ui:state", ui);
+  const window = livePopup();
+  if (window && !window.webContents.isDestroyed()) {
+    window.webContents.send("ui:state", ui);
+  }
 }
 
 function setTrayIcon(): void {
@@ -350,24 +335,33 @@ function createPopup(): BrowserWindow {
     if (Date.now() - shownAt < 250) return;
     window.hide();
   });
+  window.on("close", (event) => {
+    if (quitting) return;
+    event.preventDefault();
+    window.hide();
+  });
   window.on("closed", () => {
-    popup = null;
+    if (popup === window) popup = null;
+  });
+  window.webContents.on("render-process-gone", (_event, details) => {
+    const debug = process.env.TALKTRACE_DEBUG ?? process.env.RECORDER_DEBUG;
+    if (debug) process.stderr.write(`[renderer] gone: ${details.reason}\n`);
+    if (popup === window) popup = null;
   });
   return window;
 }
 
 function positionPopup(window: BrowserWindow): void {
-  if (!tray || tray.isDestroyed()) return;
+  if (!tray || tray.isDestroyed() || window.isDestroyed()) return;
   const iconBounds = tray.getBounds();
   const x = Math.round(iconBounds.x + iconBounds.width / 2 - POPUP_WIDTH / 2);
   const y = Math.round(iconBounds.y + iconBounds.height + 4);
-  appliedHeight = popupHeight();
+  appliedHeight = popupHeight(ui);
   window.setBounds({ x, y, width: POPUP_WIDTH, height: appliedHeight });
 }
 
 function showPopup(): void {
-  const window = livePopup();
-  if (!window) return;
+  const window = ensurePopup();
   helper.send({ cmd: "permissions" });
   helper.send({ cmd: "listDevices" });
   positionPopup(window);
@@ -378,8 +372,7 @@ function showPopup(): void {
 
 function togglePopup(): void {
   const window = livePopup();
-  if (!window) return;
-  if (window.isVisible()) {
+  if (window?.isVisible()) {
     window.hide();
     return;
   }
@@ -399,6 +392,14 @@ function initIpc(): void {
 }
 
 // MARK: startup
+
+if (!app.requestSingleInstanceLock()) {
+  app.quit();
+}
+
+app.on("second-instance", () => {
+  showPopup();
+});
 
 void app.whenReady().then(() => {
   app.dock.hide();
