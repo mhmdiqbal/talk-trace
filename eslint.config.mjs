@@ -44,7 +44,7 @@ export default defineConfig(
     ],
     languageOptions: {
       parserOptions: {
-        project: ["./tsconfig.json", "./tsconfig.renderer.json"],
+        project: ["./tsconfig.json", "./tsconfig.renderer.json", "./tsconfig.test.json"],
         tsconfigRootDir: import.meta.dirname,
       },
     },
@@ -54,6 +54,29 @@ export default defineConfig(
       "no-undef": "off",
       ...style,
       ...limits,
+    },
+  },
+  {
+    files: ["tests/**/*.ts", "vitest.config.mts"],
+    extends: [
+      js.configs.recommended,
+      tseslint.configs.strict,
+      tseslint.configs.strictTypeChecked,
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ["./tsconfig.test.json"],
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    plugins: { "@stylistic": stylistic },
+    rules: {
+      "no-undef": "off",
+      ...style,
+      "@typescript-eslint/unbound-method": "off",
+      "max-lines-per-function": "off",
+      "max-nested-callbacks": "off",
+      "max-statements": "off",
     },
   },
   {

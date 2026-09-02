@@ -14,7 +14,7 @@
     "build:transcriber": "./scripts/build-transcriber.sh",
     "build:ts": "tsc -p tsconfig.renderer.json && tsc -p tsconfig.json",
     "build:copy": "mkdir -p dist/renderer/icons && cp src/renderer/index.html src/renderer/tokens.css src/renderer/style.css dist/renderer/ && cp src/renderer/icons/*.svg dist/renderer/icons/",
-    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.renderer.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.renderer.json && tsc --noEmit -p tsconfig.test.json",
     "lint": "./scripts/lint.sh",
     "lint:sh": "shellcheck scripts/*.sh",
     "lint:shell": "shellcheck scripts/*.sh",
@@ -22,8 +22,10 @@
     "build": "pnpm run build:helper && pnpm run build:transcriber && pnpm run build:ts && pnpm run build:copy",
     "start": "pnpm run build && electron .",
     "dist": "pnpm run build && electron-builder",
-    "test": "./scripts/regression.sh",
-    "pretest": "pnpm lint",
+    "test": "vitest run",
+    "test:unit": "vitest run",
+    "test:watch": "vitest",
+    "test:regression": "./scripts/regression.sh",
     "prepare": "husky"
   },
   "devDependencies": {
@@ -36,6 +38,7 @@
     "globals": "^17.11.0",
     "husky": "^9.1.7",
     "typescript": "^5.7.2",
-    "typescript-eslint": "^8.68.0"
+    "typescript-eslint": "^8.68.0",
+    "vitest": "^4.1.11"
   }
 }
