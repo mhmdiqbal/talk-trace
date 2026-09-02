@@ -19,6 +19,5 @@ const api = {
 };
 
 export type TalkTraceApi = typeof api;
-export type RecorderApi = TalkTraceApi;
 
 contextBridge.exposeInMainWorld("talkTrace", api);

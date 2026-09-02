@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# SonarQube on Podman for record-app
+# SonarQube on Podman for TalkTrace
 # ==============================================================================
 #   ./scripts/sonarqube.sh start   - create or resume SonarQube + Postgres
 #   ./scripts/sonarqube.sh stop    - stop both containers

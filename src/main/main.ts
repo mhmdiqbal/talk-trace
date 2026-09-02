@@ -24,6 +24,8 @@ import * as settings from "./settings";
 import * as transcribe from "./transcribe";
 import type { HelperEvent, UiState } from "./protocol";
 
+app.name = "TalkTrace";
+
 const HOTKEY = "Alt+Command+R";
 const MUTE_HOTKEY = "Alt+Command+M";
 const MAX_RESPAWNS = 5;

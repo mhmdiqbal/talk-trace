@@ -34,4 +34,4 @@ version="$(node -p "require('./package.json').version")"
 sonar-scanner -Dsonar.token="$SONAR_TOKEN" -Dsonar.projectVersion="$version"
 
 echo
-echo "Dashboard: http://localhost:9000/dashboard?id=record-app"
+echo "Dashboard: http://localhost:9000/dashboard?id=talk-trace"
