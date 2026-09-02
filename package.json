@@ -21,7 +21,8 @@
     "start": "pnpm run build && electron .",
     "dist": "pnpm run build && electron-builder",
     "test": "./scripts/regression.sh",
-    "pretest": "pnpm lint"
+    "pretest": "pnpm lint",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -31,6 +32,7 @@
     "electron-builder": "^25.1.8",
     "eslint": "^10.9.1",
     "globals": "^17.11.0",
+    "husky": "^9.1.7",
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.68.0"
   }
